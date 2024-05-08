@@ -690,7 +690,7 @@ def _datetime_to_cdf_time(
         datetime_data = datetime_array.attrs[attribute_name]
     else:
         datetime_data = datetime_array.data
-    datetime64_data = np.array(datetime_data, dtype="datetime64[ns]")
+    datetime64_data = np.atleast_1d(np.array(datetime_data, dtype="datetime64[ns]"))
     cdf_epoch = False
     cdf_epoch16 = False
     if "CDF_DATA_TYPE" in datetime_array.attrs:
@@ -704,21 +704,35 @@ def _datetime_to_cdf_time(
     else:
         dtype_for_time_data = np.int64  # type: ignore
 
-    cdf_time_data = np.array([], dtype=dtype_for_time_data)
-    for dd in datetime64_data:
-        year = dd.astype("datetime64[Y]").astype(int) + 1970
-        month = dd.astype("datetime64[M]").astype(int) % 12 + 1
+    years = datetime64_data.astype("datetime64[Y]").astype("int64") + 1970
+    months = datetime64_data.astype("datetime64[M]").astype("int64") % 12 + 1
+    days = np.zeros(len(datetime64_data), dtype=np.int64)
+    i = 0
+    for i in range(len(datetime64_data)):
+        day = ((datetime64_data[i] - np.datetime64(f"{years[i]}-{months[i]:02d}", "M")) / 86400000000000).astype("int64") + 1
+        days[i] = day.item()
+        i += 1
+    hours = datetime64_data.astype("datetime64[h]").astype("int64") % 24
+    minutes = datetime64_data.astype("datetime64[m]").astype("int64") % 60
+    seconds = datetime64_data.astype("datetime64[s]").astype("int64") % 60
+    milliseconds = datetime64_data.astype("datetime64[ms]").astype("int64") % 1000
+    microseconds = datetime64_data.astype("datetime64[us]").astype("int64") % 1000
+    nanoseconds = datetime64_data.astype("datetime64[ns]").astype("int64") % 1000
+    picoseconds = 0
+
+    cdf_time_data = np.zeros(len(datetime64_data), dtype=dtype_for_time_data)
+    for i in range(len(datetime64_data)):
         dd_to_convert = [
-            dd.astype("datetime64[Y]").astype("int64") + 1970,
-            dd.astype("datetime64[M]").astype("int64") % 12 + 1,
-            ((dd - np.datetime64(f"{year}-{month:02d}", "M")) / 86400000000000).astype("int64") + 1,
-            dd.astype("datetime64[h]").astype("int64") % 24,
-            dd.astype("datetime64[m]").astype("int64") % 60,
-            dd.astype("datetime64[s]").astype("int64") % 60,
-            dd.astype("datetime64[ms]").astype("int64") % 1000,
-            dd.astype("datetime64[us]").astype("int64") % 1000,
-            dd.astype("datetime64[ns]").astype("int64") % 1000,
-            0,
+            years[i],
+            months[i],
+            days[i],
+            hours[i],
+            minutes[i],
+            seconds[i],
+            milliseconds[i],
+            microseconds[i],
+            nanoseconds[i],
+            picoseconds,
         ]
         if cdf_epoch16:
             converted_data = cdfepoch.compute(dd_to_convert)
@@ -726,7 +740,7 @@ def _datetime_to_cdf_time(
             converted_data = cdfepoch.compute(dd_to_convert[0:7])
         else:
             converted_data = cdfepoch.compute(dd_to_convert[0:9])
-        cdf_time_data = np.append(cdf_time_data, converted_data)
+        cdf_time_data[i] = converted_data
     return cdf_time_data
 
 
