@@ -1,6 +1,4 @@
-**********************
-CDF Time Conversions
-**********************
+# cdfepoch
 
 There are three (3) unique epoch data types in CDF: CDF_EPOCH, CDF_EPOCH16 and CDF_TIME_TT2000.
 
@@ -10,9 +8,4 @@ There are three (3) unique epoch data types in CDF: CDF_EPOCH, CDF_EPOCH16 and C
 
 The following two classes contain functions to convert those times into formats that are in more standard use.
 
-
-.. automodapi:: cdflib.epochs
-    :no-inheritance-diagram:
-
-.. automodapi:: cdflib.epochs_astropy
-    :no-inheritance-diagram:
+::: cdflib.epochs

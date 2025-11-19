@@ -1,9 +1,6 @@
-CDF Reader Class
-================
+# cdfread
 
-.. autoclass:: cdflib.cdfread.CDF
-   :members:
-   :undoc-members:
+::: cdflib.cdfread
 
 Sample Usage
 ------------

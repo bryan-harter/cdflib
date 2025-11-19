@@ -1,9 +1,6 @@
-CDF Writer Class
-=================
+# cdfwrite
 
-.. autoclass:: cdflib.cdfwrite.CDF
-   :members:
-
+::: cdflib.cdfwrite
 
 Sample Usage
 ------------
