@@ -20,8 +20,7 @@ jobs:
       submodules: false
       coverage: codecov
       envs: |
-        - linux: py39
-        #- linux: py310
+        - linux: py310
         #- linux: py311
         - linux: py312
         #- windows: py39
