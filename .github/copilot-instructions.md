@@ -10,7 +10,7 @@ cdflib is a pure-Python library for reading and writing NASA CDF files. Key code
 - **Xarray integration:** `cdflib/xarray/` provides `cdf_to_xarray.py` and `xarray_to_cdf.py`. These are integration layers — changes to core types must be reflected here.
 
 ## Project workflows & commands
-- Run tests locally: `pytest tests/` (project config in `setup.cfg`).
+- Run tests locally: `pytest tests/` (project config in `pyproject.toml`).
 - Full tox matrix (multiple Python versions / factors): `tox -l -v` to list, then `tox -e py312` or `tox -e py312-online` to run an environment. `tox -e build_docs` builds MkDocs docs.
 - CI/test command: tox sets `PYTEST_COMMAND = pytest --cov=cdflib tests/` in `tox.ini` — use it to maintain parity with CI.
 

@@ -1,15 +1,16 @@
 site_name: cdflib
 theme:
   name: material
-repo_url: https://github.com/MAVENSDC/cdflib
+repo_url: https://github.com/lasp/cdflib
 nav:
   - Home: index.md
-  - API:
-    - cdfread: cdfread.md
-    - cdfwrite: cdfwrite.md
-    - cdfepoch: cdfepoch.md
+  - Tools:
+    - Reading CDFs: cdfread.md
+    - Writing CDFs: cdfwrite.md
+    - Time Conversions: cdfepoch.md
     - dataclasses: dataclasses.md
     - xarray: xarray.md
+  - XArray Tools: xarray.md
   - Changelog: changelog.md
   - Development: development.md
 plugins:
@@ -19,6 +20,7 @@ plugins:
         python:
           options:
             show_source: true
+            docstring_style: numpy
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true

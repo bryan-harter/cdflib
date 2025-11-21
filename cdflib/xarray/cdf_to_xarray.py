@@ -689,59 +689,73 @@ def cdf_to_xarray(filename: str, to_datetime: bool = True, to_unixtime: bool = F
     """
     This function converts CDF files into XArray Dataset Objects.
 
-    Parameters:
-        filename (str):  The path to the CDF file to read
-        to_datetime (bool, optional): Whether or not to convert CDF_EPOCH/EPOCH_16/TT2000 to datetime64, or leave them as is
-        to_unixtime (bool, optional): Whether or not to convert CDF_EPOCH/EPOCH_16/TT2000 to unixtime, or leave them as is
-        fillval_to_nan (bool, optional): If True, any data values that match the FILLVAL attribute for a variable will be set to NaN
+    Parameters
+    ----------
+    filename :  str
+        The path to the CDF file to read
+    to_datetime : bool, optional
+        Whether or not to convert CDF_EPOCH/EPOCH_16/TT2000 to datetime64, or leave them as is
+    to_unixtime :  bool, optional
+        Whether or not to convert CDF_EPOCH/EPOCH_16/TT2000 to unixtime, or leave them as is
+    fillval_to_nan : bool, optional
+        If True, any data values that match the FILLVAL attribute for a variable will be set to NaN
 
-    Returns:
-        An XArray Dataset Object
+    Returns
+    -------
+    datset : xarray.Dataset
+        An XArray Dataset object containing all of the data and attributes from the CDF file
 
-    Example MMS:
-        >>> # Import necessary libraries
-        >>> import cdflib.xarray
-        >>> import xarray as xr
-        >>> import os
-        >>> import urllib.request
+    Example MMS
+    -----------
+    ```python
+    >>> # Import necessary libraries
+    >>> import cdflib.xarray
+    >>> import xarray as xr
+    >>> import os
+    >>> import urllib.request
 
-        >>> # Download a CDF file
-        >>> fname = 'mms2_fgm_srvy_l2_20160809_v4.47.0.cdf'
-        >>> url = ("https://lasp.colorado.edu/maven/sdc/public/data/sdc/web/cdflib_testing/mms2_fgm_srvy_l2_20160809_v4.47.0.cdf")
-        >>> if not os.path.exists(fname):
-        >>>     urllib.request.urlretrieve(url, fname)
+    >>> # Download a CDF file
+    >>> fname = 'mms2_fgm_srvy_l2_20160809_v4.47.0.cdf'
+    >>> url = ("https://lasp.colorado.edu/maven/sdc/public/data/sdc/web/cdflib_testing/mms2_fgm_srvy_l2_20160809_v4.47.0.cdf")
+    >>> if not os.path.exists(fname):
+    >>>     urllib.request.urlretrieve(url, fname)
 
-        >>> # Load in and display the CDF file
-        >>> mms_data = cdflib.xarray.cdf_to_xarray("mms2_fgm_srvy_l2_20160809_v4.47.0.cdf", to_unixtime=True, fillval_to_nan=True)
+    >>> # Load in and display the CDF file
+    >>> mms_data = cdflib.xarray.cdf_to_xarray("mms2_fgm_srvy_l2_20160809_v4.47.0.cdf", to_unixtime=True, fillval_to_nan=True)
 
-        >>> # Show off XArray functionality
-        >>>
-        >>> # Slice the data using built in XArray functions
-        >>> mms_data2 = mms_data.isel(dim0=0)
-        >>> # Plot the sliced data using built in XArray functions
-        >>> mms_data2['mms2_fgm_b_gse_srvy_l2'].plot()
-        >>> # Zoom in on the slices data in time using built in XArray functions
-        >>> mms_data3 = mms_data2.isel(Epoch=slice(716000,717000))
-        >>> # Plot the zoomed in sliced data using built in XArray functionality
-        >>> mms_data3['mms2_fgm_b_gse_srvy_l2'].plot()
+    >>> # Show off XArray functionality
 
-    Example THEMIS:
-        >>> # Import necessary libraries
-        >>> import cdflib.xarray
-        >>> import xarray as xr
-        >>> import os
-        >>> import urllib.request
+    >>> # Slice the data using built in XArray functions
+    >>> mms_data2 = mms_data.isel(dim0=0)
+    >>> # Plot the sliced data using built in XArray functions
+    >>> mms_data2['mms2_fgm_b_gse_srvy_l2'].plot()
+    >>> # Zoom in on the slices data in time using built in XArray functions
+    >>> mms_data3 = mms_data2.isel(Epoch=slice(716000,717000))
+    >>> # Plot the zoomed in sliced data using built in XArray functionality
+    >>> mms_data3['mms2_fgm_b_gse_srvy_l2'].plot()
+    ```
 
-        >>> # Download a CDF file
-        >>> fname = 'thg_l2_mag_amd_20070323_v01.cdf'
-        >>> url = ("https://lasp.colorado.edu/maven/sdc/public/data/sdc/web/cdflib_testing/thg_l2_mag_amd_20070323_v01.cdf")
-        >>> if not os.path.exists(fname):
-        >>>     urllib.request.urlretrieve(url, fname)
+    Example THEMIS
+    --------------
+    ```python
+    >>> # Import necessary libraries
+    >>> import cdflib.xarray
+    >>> import xarray as xr
+    >>> import os
+    >>> import urllib.request
 
-        >>> # Load in and display the CDF file
-        >>> thg_data = cdflib.xarray.cdf_to_xarray(fname, to_unixtime=True, fillval_to_nan=True)
+    >>> # Download a CDF file
+    >>> fname = 'thg_l2_mag_amd_20070323_v01.cdf'
+    >>> url = ("https://lasp.colorado.edu/maven/sdc/public/data/sdc/web/cdflib_testing/thg_l2_mag_amd_20070323_v01.cdf")
+    >>> if not os.path.exists(fname):
+    >>>     urllib.request.urlretrieve(url, fname)
 
-    Processing Steps:
+    >>> # Load in and display the CDF file
+    >>> thg_data = cdflib.xarray.cdf_to_xarray(fname, to_unixtime=True, fillval_to_nan=True)
+    ```
+
+    Processing Steps
+    ----------------
         1. For each variable in the CDF file
             1. Determine the name of the dimension that spans the data "records"
                 - Check if the variable itself might be a dimension

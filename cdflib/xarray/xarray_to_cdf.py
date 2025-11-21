@@ -891,85 +891,105 @@ def xarray_to_cdf(
     """
     This function converts XArray Dataset objects into CDF files.
 
-    Parameters:
-        xarray_dataset (xarray.Dataset): The XArray Dataset object that you'd like to convert into a CDF file
-        file_name (str):  The path to the place the newly created CDF file
-        unix_time_to_cdf_time (bool, optional): Whether or not to assume variables that will become a CDF_EPOCH/EPOCH16/TT2000 are a unix timestamp
-        istp (bool, optional): Whether or not to do checks on the Dataset object to attempt to enforce CDF compliance
-        terminate_on_warning (bool, optional): Whether or not to throw an error when given warnings or to continue trying to make the file
-        auto_fix_depends (bool, optional): Whether or not to automatically add dependencies
-        record_dimensions (list of str, optional): If the code cannot determine which dimensions should be made into CDF records, you may provide a list of them here
-        compression (int, optional): The level of compression to gzip the data in the variables.  Default is no compression, standard is 6.
-        nan_to_fillval (bool, optional): Convert all np.nan and np.datetime64('NaT') to the standard CDF FILLVALs.
-    Returns:
-        None, but generates a CDF file
+    Parameters
+    ----------
+    xarray_dataset : xarray.Dataset
+        The XArray Dataset object that you'd like to convert into a CDF file
+    file_name : str
+        The path to the place the newly created CDF file
+    unix_time_to_cdf_time : bool, optional
+        Whether or not to assume variables that will become a CDF_EPOCH/EPOCH16/TT2000 are a unix timestamp
+    istp : bool, optional
+        Whether or not to do checks on the Dataset object to attempt to enforce CDF compliance
+    terminate_on_warning : bool, optional
+        Whether or not to throw an error when given warnings or to continue trying to make the file
+    auto_fix_depends : bool, optional
+        Whether or not to automatically add dependencies
+    record_dimensions : list of str, optional
+        If the code cannot determine which dimensions should be made into CDF records, you may provide a list of them here
+    compression : int, optional
+        The level of compression to gzip the data in the variables.  Default is no compression, standard is 6.
+    nan_to_fillval : bool, optional
+        Convert all np.nan and np.datetime64('NaT') to the standard CDF FILLVALs.
 
-    Example CDF file from scratch:
-        >>> # Import the needed libraries
-        >>> from cdflib.xarray import xarray_to_cdf
-        >>> import xarray as xr
-        >>> import os
-        >>> import urllib.request
+    Returns
+    -------
+    None : None
+        Function generates a CDF file
 
-        >>> # Create some fake data
-        >>> var_data = [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
-        >>> var_dims = ['epoch', 'direction']
-        >>> data = xr.Variable(var_dims, var_data)
+    Example CDF file from scratch
+    ------------------------------
+    ```python
+    >>> # Import the needed libraries
+    >>> from cdflib.xarray import xarray_to_cdf
+    >>> import xarray as xr
+    >>> import os
+    >>> import urllib.request
 
-        >>> # Create fake epoch data
-        >>> epoch_data = [1, 2, 3]
-        >>> epoch_dims = ['epoch']
-        >>> epoch = xr.Variable(epoch_dims, epoch_data)
+    >>> # Create some fake data
+    >>> var_data = [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+    >>> var_dims = ['epoch', 'direction']
+    >>> data = xr.Variable(var_dims, var_data)
 
-        >>> # Combine the two into an xarray Dataset and export as CDF (this will print out many ISTP warnings)
-        >>> ds = xr.Dataset(data_vars={'data': data, 'epoch': epoch})
-        >>> xarray_to_cdf(ds, 'hello.cdf')
+    >>> # Create fake epoch data
+    >>> epoch_data = [1, 2, 3]
+    >>> epoch_dims = ['epoch']
+    >>> epoch = xr.Variable(epoch_dims, epoch_data)
 
-        >>> # Add some global attributes
-        >>> global_attributes = {'Project': 'Hail Mary',
-        >>>                      'Source_name': 'Thin Air',
-        >>>                      'Discipline': 'None',
-        >>>                      'Data_type': 'counts',
-        >>>                      'Descriptor': 'Midichlorians in unicorn blood',
-        >>>                      'Data_version': '3.14',
-        >>>                      'Logical_file_id': 'SEVENTEEN',
-        >>>                      'PI_name': 'Darth Vader',
-        >>>                      'PI_affiliation': 'Dark Side',
-        >>>                      'TEXT': 'AHHHHH',
-        >>>                      'Instrument_type': 'Banjo',
-        >>>                      'Mission_group': 'Impossible',
-        >>>                      'Logical_source': ':)',
-        >>>                      'Logical_source_description': ':('}
+    >>> # Combine the two into an xarray Dataset and export as CDF (this will print out many ISTP warnings)
+    >>> ds = xr.Dataset(data_vars={'data': data, 'epoch': epoch})
+    >>> xarray_to_cdf(ds, 'hello.cdf')
 
-        >>> # Lets add a new coordinate variable for the "direction"
-        >>> dir_data = [1, 2, 3]
-        >>> dir_dims = ['direction']
-        >>> direction = xr.Variable(dir_dims, dir_data)
+    >>> # Add some global attributes
+    >>> global_attributes = {'Project': 'Hail Mary',
+    >>>                      'Source_name': 'Thin Air',
+    >>>                      'Discipline': 'None',
+    >>>                      'Data_type': 'counts',
+    >>>                      'Descriptor': 'Midichlorians in unicorn blood',
+    >>>                      'Data_version': '3.14',
+    >>>                      'Logical_file_id': 'SEVENTEEN',
+    >>>                      'PI_name': 'Darth Vader',
+    >>>                      'PI_affiliation': 'Dark Side',
+    >>>                      'TEXT': 'AHHHHH',
+    >>>                      'Instrument_type': 'Banjo',
+    >>>                      'Mission_group': 'Impossible',
+    >>>                      'Logical_source': ':)',
+    >>>                      'Logical_source_description': ':('}
 
-        >>> # Recreate the Dataset with this new objects, and recreate the CDF
-        >>> ds = xr.Dataset(data_vars={'data': data, 'epoch': epoch, 'direction':direction}, attrs=global_attributes)
-        >>> os.remove('hello.cdf')
-        >>> xarray_to_cdf(ds, 'hello.cdf')
+    >>> # Lets add a new coordinate variable for the "direction"
+    >>> dir_data = [1, 2, 3]
+    >>> dir_dims = ['direction']
+    >>> direction = xr.Variable(dir_dims, dir_data)
 
-    Example netCDF -> CDF conversion:
-        >>> # Download a netCDF file (if needed)
-        >>> fname = 'dn_magn-l2-hires_g17_d20211219_v1-0-1.nc'
-        >>> url = ("https://lasp.colorado.edu/maven/sdc/public/data/sdc/web/cdflib_testing/dn_magn-l2-hires_g17_d20211219_v1-0-1.nc")
-        >>> if not os.path.exists(fname):
-        >>>     urllib.request.urlretrieve(url, fname)
+    >>> # Recreate the Dataset with this new objects, and recreate the CDF
+    >>> ds = xr.Dataset(data_vars={'data': data, 'epoch': epoch, 'direction':direction}, attrs=global_attributes)
+    >>> os.remove('hello.cdf')
+    >>> xarray_to_cdf(ds, 'hello.cdf')
+    ```
 
-        >>> # Load in the dataset, and set VAR_TYPES attributes (the most important attribute as far as this code is concerned)
-        >>> goes_r_mag = xr.load_dataset("dn_magn-l2-hires_g17_d20211219_v1-0-1.nc")
-        >>> for var in goes_r_mag:
-        >>>     goes_r_mag[var].attrs['VAR_TYPE'] = 'data'
-        >>> goes_r_mag['coordinate'].attrs['VAR_TYPE'] = 'support_data'
-        >>> goes_r_mag['time'].attrs['VAR_TYPE'] = 'support_data'
-        >>> goes_r_mag['time_orbit'].attrs['VAR_TYPE'] = 'support_data'
+    Example netCDF -> CDF conversion
+    --------------------------------
+    ```python
+    >>> # Download a netCDF file (if needed)
+    >>> fname = 'dn_magn-l2-hires_g17_d20211219_v1-0-1.nc'
+    >>> url = ("https://lasp.colorado.edu/maven/sdc/public/data/sdc/web/cdflib_testing/dn_magn-l2-hires_g17_d20211219_v1-0-1.nc")
+    >>> if not os.path.exists(fname):
+    >>>     urllib.request.urlretrieve(url, fname)
 
-        >>> # Create the CDF file
-        >>> xarray_to_cdf(goes_r_mag, 'hello.cdf')
+    >>> # Load in the dataset, and set VAR_TYPES attributes (the most important attribute as far as this code is concerned)
+    >>> goes_r_mag = xr.load_dataset("dn_magn-l2-hires_g17_d20211219_v1-0-1.nc")
+    >>> for var in goes_r_mag:
+    >>>     goes_r_mag[var].attrs['VAR_TYPE'] = 'data'
+    >>> goes_r_mag['coordinate'].attrs['VAR_TYPE'] = 'support_data'
+    >>> goes_r_mag['time'].attrs['VAR_TYPE'] = 'support_data'
+    >>> goes_r_mag['time_orbit'].attrs['VAR_TYPE'] = 'support_data'
 
-    Processing Steps:
+    >>> # Create the CDF file
+    >>> xarray_to_cdf(goes_r_mag, 'hello.cdf')
+    ```
+
+    Processing Steps
+    ----------------
         1. Determines the list of dimensions that represent time-varying dimensions.  These ultimately become the "records" of the CDF file
             - If it is named "epoch" or "epoch_N", it is considered time-varying
             - If a variable points to another variable with a DEPEND_0 attribute, it is considered time-varying
@@ -984,7 +1004,8 @@ def xarray_to_cdf(
         6. Optionally, convert variables with the name "epoch" or "epoch_N" to CDF_TT2000
         7. Write all variables and global attributes to the CDF file!
 
-    ISTP Warnings:
+    ISTP Warnings
+    -------------
         If ISTP=true, these are some of the common things it will check:
 
         - Missing or invalid VAR_TYPE variable attributes
@@ -995,7 +1016,8 @@ def xarray_to_cdf(
         - Missing an "epoch" dimension
         - DEPEND_N attribute pointing to a variable with uncompatible dimensions
 
-    CDF Data Types:
+    CDF Data Types
+    --------------
         All variable data is automatically converted to one of the following CDF types, based on the type of data in the xarray Dataset:
 
         =============  ===============
@@ -1020,7 +1042,7 @@ def xarray_to_cdf(
         =============  ===============
 
         If you want to attempt to cast your data to a different type, you need to add an attribute to your variable called "CDF_DATA_TYPE".
-        xarray_to_cdf will read this attribute and override the default conversions.  Valid choices are:
+        xarray_to_cdf will read this attribute and override the default conversions.  Valid choices are
 
         - Integers: CDF_INT1, CDF_INT2, CDF_INT4, CDF_INT8
         - Unsigned Integers: CDF_UINT1, CDF_UINT2, CDF_UINT4
@@ -1098,10 +1120,10 @@ def xarray_to_cdf(
 
             if len(d[var].dims) > 0:
                 if var in time_varying_dimensions or var in depend_0_vars:
-                    dim_sizes = d[var].shape[1:]  # type: ignore
+                    dim_sizes = list(d[var].shape[1:])
                     record_vary = True
                 else:
-                    dim_sizes = d[var].shape
+                    dim_sizes = list(d[var].shape)
                     record_vary = False
             else:
                 dim_sizes = []
@@ -1146,7 +1168,7 @@ def xarray_to_cdf(
                 "Data_Type": cdf_data_type,
                 "Num_Elements": cdf_num_elements,
                 "Rec_Vary": record_vary,
-                "Dim_Sizes": list(dim_sizes),
+                "Dim_Sizes": dim_sizes,
                 "Compress": compression,
             }
 

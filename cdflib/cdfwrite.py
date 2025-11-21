@@ -1,6 +1,5 @@
 import binascii
 import hashlib
-import io
 import logging
 import math
 import numbers
@@ -11,7 +10,7 @@ import sys
 from functools import wraps
 from numbers import Number
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -822,7 +821,7 @@ class CDF:
                     if maxRec < varMaxRec:
                         self._update_offset_value(f, self.gdr_head + 52, 4, varMaxRec)
 
-    def _write_var_attrs(self, f: io.BufferedWriter, varNum: int, var_attrs: Dict[str, Any], zVar: bool) -> None:
+    def _write_var_attrs(self, f: BinaryIO, varNum: int, var_attrs: Dict[str, Any], zVar: bool) -> None:
         """
         Writes ADRs and AEDRs for variables
 
@@ -944,7 +943,7 @@ class CDF:
 
     def _write_var_data_nonsparse(
         self,
-        f: io.BufferedWriter,
+        f: BinaryIO,
         zVar: bool,
         var: int,
         dataType: int,
@@ -1106,7 +1105,7 @@ class CDF:
 
     def _write_var_data_sparse(
         self,
-        f: io.BufferedWriter,
+        f: BinaryIO,
         zVar: bool,
         var: int,
         dataType: int,
@@ -1193,7 +1192,7 @@ class CDF:
 
         return rec_end
 
-    def _create_vxr(self, f: io.BufferedWriter, recStart: int, recEnd: int, currentVDR: int, priorVXR: int, vvrOffset: int) -> int:
+    def _create_vxr(self, f: BinaryIO, recStart: int, recEnd: int, currentVDR: int, priorVXR: int, vvrOffset: int) -> int:
         """
         Create a VXR AND use a VXR
 
@@ -1229,7 +1228,7 @@ class CDF:
         self._update_offset_value(f, currentVDR + 36, 8, vxroffset)
         return vxroffset
 
-    def _use_vxrentry(self, f: io.BufferedWriter, VXRoffset: int, recStart: int, recEnd: int, offset: int) -> int:
+    def _use_vxrentry(self, f: BinaryIO, VXRoffset: int, recStart: int, recEnd: int, offset: int) -> int:
         """
         Adds a VVR pointer to a VXR
         """
@@ -1250,7 +1249,7 @@ class CDF:
         self._update_offset_value(f, VXRoffset + 24, 4, usedEntries)
         return usedEntries
 
-    def _add_vxr_levels_r(self, f: io.BufferedWriter, vxrhead: int, numVXRs: int) -> Tuple[int, int]:
+    def _add_vxr_levels_r(self, f: BinaryIO, vxrhead: int, numVXRs: int) -> Tuple[int, int]:
         """
         Build a new level of VXRs... make VXRs more tree-like
 
@@ -1321,7 +1320,7 @@ class CDF:
         else:
             return newvxrhead, newvxroff
 
-    def _update_vdr_vxrheadtail(self, f: io.BufferedWriter, vdr_offset: int, VXRoffset: int) -> None:
+    def _update_vdr_vxrheadtail(self, f: BinaryIO, vdr_offset: int, VXRoffset: int) -> None:
         """
         This sets a VXR to be the first and last VXR in the VDR
         """
@@ -1330,7 +1329,7 @@ class CDF:
         # VDR's VXRtail
         self._update_offset_value(f, vdr_offset + 36, 8, VXRoffset)
 
-    def _get_recrange(self, f: io.BufferedWriter, VXRoffset: int) -> Tuple[int, int]:
+    def _get_recrange(self, f: BinaryIO, VXRoffset: int) -> Tuple[int, int]:
         """
         Finds the first and last record numbers pointed by the VXR
         Assumes the VXRs are in order
@@ -1505,7 +1504,7 @@ class CDF:
         except Exception:
             return 0
 
-    def _write_cdr(self, f: io.BufferedWriter, major: int, encoding: int, checksum: int) -> int:
+    def _write_cdr(self, f: BinaryIO, major: int, encoding: int, checksum: int) -> int:
         f.seek(0, 2)
         byte_loc = f.tell()
         block_size = self.CDR_BASE_SIZE64 + self.CDF_COPYRIGHT_LEN
@@ -1552,7 +1551,7 @@ class CDF:
 
         return byte_loc
 
-    def _write_gdr(self, f: io.BufferedWriter) -> int:
+    def _write_gdr(self, f: BinaryIO) -> int:
         f.seek(0, 2)
         byte_loc = f.tell()
         block_size = self.GDR_BASE_SIZE64 + 4 * self.num_rdim
@@ -1594,7 +1593,7 @@ class CDF:
 
         return byte_loc
 
-    def _write_adr(self, f: io.BufferedWriter, gORv: bool, name: str) -> Tuple[int, int]:
+    def _write_adr(self, f: BinaryIO, gORv: bool, name: str) -> Tuple[int, int]:
         """
         Writes and ADR to the end of the file.
 
@@ -1676,7 +1675,7 @@ class CDF:
 
     def _write_aedr(
         self,
-        f: io.BufferedWriter,
+        f: BinaryIO,
         gORz: bool,
         attrNum: int,
         entryNum: int,
@@ -1790,7 +1789,7 @@ class CDF:
 
     def _write_vdr(
         self,
-        f: io.BufferedWriter,
+        f: BinaryIO,
         cdataType: int,
         numElems: int,
         numDims: int,
@@ -1977,7 +1976,7 @@ class CDF:
 
         return num, byte_loc
 
-    def _write_vxr(self, f: io.BufferedWriter, numEntries: Optional[int] = None) -> int:
+    def _write_vxr(self, f: BinaryIO, numEntries: Optional[int] = None) -> int:
         """
         Creates a VXR at the end of the file.
         Returns byte location of the VXR
@@ -2012,7 +2011,7 @@ class CDF:
         f.write(vxr)
         return byte_loc
 
-    def _write_vvr(self, f: io.BufferedWriter, data: bytes) -> int:
+    def _write_vvr(self, f: BinaryIO, data: bytes) -> int:
         """
         Writes a vvr to the end of file "f" with the byte stream "data".
         """
@@ -2029,7 +2028,7 @@ class CDF:
 
         return byte_loc
 
-    def _write_cpr(self, f: io.BufferedWriter, cType: int, parameter: int) -> int:
+    def _write_cpr(self, f: BinaryIO, cType: int, parameter: int) -> int:
         """
         Write compression info to the end of the file in a CPR.
         """
@@ -2051,7 +2050,7 @@ class CDF:
 
         return byte_loc
 
-    def _write_cvvr(self, f: io.BufferedWriter, data: Any) -> int:
+    def _write_cvvr(self, f: BinaryIO, data: Any) -> int:
         """
         Write compressed "data" variable to the end of the file in a CVVR
         """
@@ -2072,7 +2071,7 @@ class CDF:
 
         return byte_loc
 
-    def _write_ccr(self, f: io.BufferedWriter, g: io.BufferedWriter, level: int) -> None:
+    def _write_ccr(self, f: BinaryIO, g: BinaryIO, level: int) -> None:
         """
         Write a CCR to file "g" from file "f" with level "level".
         Currently, only handles gzip compression.
@@ -2479,7 +2478,7 @@ class CDF:
                         values = values * dimSizes[x]
             return values
 
-    def _read_offset_value(self, f: io.BufferedWriter, offset: int, size: int) -> int:
+    def _read_offset_value(self, f: BinaryIO, offset: int, size: int) -> int:
         """
         Reads an integer value from file "f" at location "offset".
         """
@@ -2489,7 +2488,7 @@ class CDF:
         else:
             return int.from_bytes(f.read(4), "big", signed=True)
 
-    def _update_offset_value(self, f: io.BufferedWriter, offset: int, size: int, value: Any) -> None:
+    def _update_offset_value(self, f: BinaryIO, offset: int, size: int, value: Any) -> None:
         """
         Writes "value" into location "offset" in file "f".
         """
@@ -2499,7 +2498,7 @@ class CDF:
         else:
             f.write(struct.pack(">i", value))
 
-    def _update_aedr_link(self, f: io.BufferedWriter, attrNum: int, zVar: bool, varNum: int, offset: int) -> None:
+    def _update_aedr_link(self, f: BinaryIO, attrNum: int, zVar: bool, varNum: int, offset: int) -> None:
         """
         Updates variable aedr links
 
@@ -2615,7 +2614,7 @@ class CDF:
         else:
             return isinstance(obj, numbers.Number) or isinstance(obj, np.datetime64)
 
-    def _md5_compute(self, f: io.BufferedWriter) -> bytes:
+    def _md5_compute(self, f: BinaryIO) -> bytes:
         """
         Computes the checksum of the file
         """

@@ -2,8 +2,6 @@
 ##################
 CDF Astropy Epochs
 ##################
-
-@author: Bryan Harter
 """
 import datetime
 from datetime import timezone

@@ -1,35 +1,49 @@
-name: Run tests
+name: Tests
 
 on:
   push:
-    branches:
-      - 'main'
+    branches: [ main ]
   pull_request:
-  # Allow manual runs through the web UI
   workflow_dispatch:
 
-# Only allow one run per git ref at a time
 concurrency:
-  group: '${{ github.workflow }}-${{ github.ref }}'
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  core:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
-    with:
-      submodules: false
-      coverage: codecov
-      envs: |
-        - linux: py310
-        #- linux: py311
-        - linux: py312
-        #- windows: py39
-        - windows: py310
-        #- windows: py311
-        #- windows: py312
-        #- macos: py38
-        #- macos: py39
-        #- macos: py310
-        - macos: py311-online
-        - macos: py312
-        - windows: py313-devdeps
+  tests:
+    name: ${{ matrix.os }} / ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.13"
+            tox-env: devdeps
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install Tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox
+
+      - name: Run Tests via Tox
+        # If a specific tox-env is set in matrix, use it; otherwise use standard py version
+        run: |
+          if [ -z "${{ matrix.tox-env }}" ]; then
+            tox -e py$(echo ${{ matrix.python-version }} | tr -d .)
+          else
+            tox -e ${{ matrix.tox-env }}
+          fi
+        shell: bash
