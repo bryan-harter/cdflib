@@ -27,6 +27,7 @@ classifiers = [
 dependencies = [
     "numpy >= 1.21",
 ]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/lasp/cdflib"
