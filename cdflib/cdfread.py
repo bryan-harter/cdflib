@@ -36,12 +36,12 @@ class CDF:
 
     Example
     -------
-    '''python
-    import cdflib
-    cdf_file = cdflib.CDF('/path/to/cdf_file.cdf')
-    cdf_file.cdf_info()
-    x = cdf_file.varget("NameOfVariable", startrec=0, endrec=150)
-    '''
+    ```python
+    >>> import cdflib
+    >>> cdf_file = cdflib.CDF('/path/to/cdf_file.cdf')
+    >>> cdf_file.cdf_info()
+    >>> x = cdf_file.varget("NameOfVariable", startrec=0, endrec=150)
+    ```
     """
 
     def __init__(self, path: Union[str, Path], validate: bool = False, string_encoding: str = "ascii", s3_read_method: int = 1):

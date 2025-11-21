@@ -44,13 +44,13 @@ class CDFepoch:
 
     Example
     -------
-    '''python
+    ```python
     >>> import cdflib
     >>> # Convert to an epoch
     >>> epoch = cdflib.cdfepoch.compute_epoch([2017,1,1,1,1,1,111])
     >>> # Convert from an epoch
     >>> time = cdflib.cdfepoch.to_datetime(epoch)  # Or pass epochs via CDF.varget.
-    '''
+    ```
     """
 
     version = 3
@@ -476,7 +476,7 @@ class CDFepoch:
 
         Parameters
         ----------
-        epochs : array-like
+        tt2000 : array-like
             Single, list, tuple, or np.array of tt2000 values
 
         Returns
