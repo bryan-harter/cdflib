@@ -702,7 +702,7 @@ def cdf_to_xarray(filename: str, to_datetime: bool = True, to_unixtime: bool = F
 
     Returns
     -------
-    datset : xarray.Dataset
+    dataset : xarray.Dataset
         An XArray Dataset object containing all of the data and attributes from the CDF file
 
     Example MMS
