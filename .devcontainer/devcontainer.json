@@ -9,7 +9,7 @@
 		}
 	},
 	"forwardPorts": [6080],
-	//Pip install the requriements, and then install the pre-commit hooks 
+	//Pip install the requirements, and then install the pre-commit hooks 
 	"postCreateCommand": "pip install -e .[tests,dev,docs] && pre-commit install",
 	"customizations": {
 		"vscode": {

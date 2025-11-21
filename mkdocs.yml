@@ -89,7 +89,7 @@ plugins:
 - mkdocstrings:
     handlers:
       python:
-        paths: [src, docs/snippets]
+        paths: [.]
         inventories:
         - https://docs.python.org/3/objects.inv
         - https://mkdocstrings.github.io/objects.inv
