@@ -54,8 +54,6 @@ markdown_extensions:
   - abbr
   - attr_list
   - admonition
-  - callouts:
-      strip_period: no
   - footnotes
   - md_in_html
   - pymdownx.blocks.admonition
