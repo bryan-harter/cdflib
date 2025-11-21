@@ -20,6 +20,6 @@ pip install cdflib
 
 ## Documentation
 
-The full documentation can be found here:
+The full documentation can be found here
 
-[https://cdflib.readthedocs.io/en/latest/](https://cdflib.readthedocs.io/en/latest/)
+[https://lasp.github.io/cdflib/](https://lasp.github.io/cdflib/)
