@@ -914,7 +914,7 @@ def xarray_to_cdf(
 
     Returns
     -------
-    None : None
+    None
         Function generates a CDF file
 
     Example CDF file from scratch
