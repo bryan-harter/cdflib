@@ -147,6 +147,52 @@ def test_breakdown_cdftt2000():
     assert x[8] == 131
 
 
+def test_breakdown_tt2000_leap_second_scalar_vs_array():
+    # Regression test: breakdown_tt2000 returned different results for a
+    # value depending on whether it was passed on its own or as an element
+    # of an array spanning a leap-second boundary, and a leap second was
+    # reported as an invalid minute of 60 (23:60:00) instead of 23:59:60.
+    # TT2000 values for 2016-12-31T23:59:59, the leap second
+    # 2016-12-31T23:59:60, and 2017-01-01T00:00:00 UTC.
+    t_before = np.int64(536500867184000000)
+    t_leap = t_before + 1000000000
+    t_after = t_leap + 1000000000
+
+    expected_before = [2016, 12, 31, 23, 59, 59, 0, 0, 0]
+    expected_leap = [2016, 12, 31, 23, 59, 60, 0, 0, 0]
+    expected_after = [2017, 1, 1, 0, 0, 0, 0, 0, 0]
+
+    assert cdfepoch.breakdown_tt2000(t_before).tolist() == expected_before
+    assert cdfepoch.breakdown_tt2000(t_leap).tolist() == expected_leap
+    assert cdfepoch.breakdown_tt2000(t_after).tolist() == expected_after
+
+    # The same values, as elements of arrays that span the boundary, must
+    # break down exactly as they do on their own.
+    both = cdfepoch.breakdown_tt2000([t_leap, t_after])
+    assert both[0].tolist() == expected_leap
+    assert both[1].tolist() == expected_after
+
+    spanning = cdfepoch.breakdown_tt2000([t_before, t_after])
+    assert spanning[0].tolist() == expected_before
+    assert spanning[1].tolist() == expected_after
+
+    # The leap second round-trips back to the same TT2000 value.
+    assert cdfepoch.compute_tt2000(cdfepoch.breakdown_tt2000(t_leap)) == t_leap
+
+
+def test_breakdown_tt2000_scalar_vs_array_consistency():
+    # Every element of an array must break down the same as it does on
+    # its own, including around the June 2015 leap second.
+    june_before = cdfepoch.compute_tt2000([2015, 6, 30, 23, 59, 59, 0, 0, 0])
+    values = [june_before, june_before + 1000000000, june_before + 2000000000]
+
+    as_array = cdfepoch.breakdown_tt2000(values)
+    for row, value in zip(as_array, values):
+        assert row.tolist() == cdfepoch.breakdown_tt2000(value).tolist()
+    assert as_array[1].tolist() == [2015, 6, 30, 23, 59, 60, 0, 0, 0]
+    assert as_array[2].tolist() == [2015, 7, 1, 0, 0, 0, 0, 0, 0]
+
+
 @given(random_dtime)
 @settings(max_examples=100)
 def test_compute_cdfepoch(dtime):

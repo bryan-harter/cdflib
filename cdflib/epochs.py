@@ -532,11 +532,12 @@ class CDFepoch:
         epochs[post72 & ~datxzero] -= 1
         xdates = CDFepoch._EPOCHbreakdownTT2000(epochs)
 
-        # If 1 second was subtracted, add 1 second back in
-        # Be careful not to go 60 or above
+        # If 1 second was subtracted, add 1 second back in.
+        # The flagged values are leap seconds, so let the seconds field
+        # reach 60 (e.g. 23:59:60) instead of rolling the overflow into
+        # the minutes field, which could produce an invalid minute of
+        # 60 (e.g. 23:60:00).
         xdates[5, post72 & ~datxzero] += 1
-        xdates[4, post72 & ~datxzero] += np.floor(xdates[5, post72 & ~datxzero] / 60.0)
-        xdates[5, post72 & ~datxzero] = xdates[5, post72 & ~datxzero] % 60
 
         # Set toutcs, then loop through and correct for pre-1972
         toutcs[:6, :] = xdates[:6, :]
@@ -798,7 +799,13 @@ class CDFepoch:
             idxs = (j == -1) & (nanosecs >= CDFepoch.NST[i])
             j[idxs] = i
             if i < (CDFepoch.NDAT - 1):
-                overflow = nanosecs + 1000000000 >= CDFepoch.NST[i + 1]
+                # Only flag values assigned to this leap-second period.
+                # Testing every value on every pass also flagged values in
+                # later periods whenever an array contained an element in
+                # an earlier period, which made breakdown_tt2000 return
+                # different results for a value depending on the other
+                # elements of the input array.
+                overflow = (j == i) & (nanosecs + 1000000000 >= CDFepoch.NST[i + 1])
                 da[overflow, 1] = 1.0
             if np.all(j > 0):
                 break
